@@ -28,8 +28,8 @@ Manage rundeck jobs through rundeck api
 actions :create, :delete
 default_action :create
 
-#<> @attribute name Name of the job, will be used to identify the job when interacting with rundeck.
-attribute :name,      name_attribute:  true, regex: /^[-_+.a-zA-Z0-9() ]+$/
+#<> @attribute job_name Name of the job, will be used to identify the job when interacting with rundeck.
+attribute :job_name,  kind_of: String, name_attribute:  true
 #<> @attribute project Project in which the job will be defined
 attribute :project,   kind_of: String, required: true
 #<> @attribute config Job configuration, it is a hash version of yaml output from rundeck api

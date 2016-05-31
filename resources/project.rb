@@ -43,11 +43,10 @@ project provider configures a rundeck project
 actions :create, :delete
 default_action :create
 
-#<> @attribute name Name of the project
-attribute :name,
+#<> @attribute project_name Name of the project
+attribute :project_name,
           kind_of: String,
-          name_attribute: true,
-          regex: /^[-_+.a-zA-Z0-9]+$/
+          name_attribute: true
 
 #<> @attribute executor Executor name + configuration. Could be a plain string (ssh) or complex hash configuration.
 attribute :executor,

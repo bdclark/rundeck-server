@@ -3,23 +3,32 @@ require_relative '../spec_helper'
 describe 'rundeck-test::project' do
   mock_web_xml
 
+  let(:project_name) { 'test-project-ssh' }
   let(:chef_run) do
-    ChefSpec::SoloRunner.new(
-      step_into: ['rundeck_server_project'],
-    ).converge(described_recipe)
+    ChefSpec::SoloRunner.new(step_into: ['rundeck_server_project']) do |node|
+      node.set['rundeck_test']['project_name'] = project_name
+    end.converge(described_recipe)
   end
 
   it 'creates project properties file' do
     expect(chef_run).to render_file('/var/rundeck/projects/test-project-ssh/etc/project.properties')
       .with_content('http\://chefserver_bridge\:9980')
   end
+
+  context 'project has malformed name' do
+    let(:project_name) { 'test*project' }
+    it 'raises an error' do
+      expect { chef_run }.to raise_error(RuntimeError)
+    end
+  end
 end
 
 describe 'rundeck-test::job' do
+  let(:job_name) { 'test-job' }
   let(:chef_run) do
-    ChefSpec::SoloRunner.new(
-      step_into: ['rundeck_server_job'],
-    ).converge(described_recipe)
+    ChefSpec::SoloRunner.new(step_into: ['rundeck_server_job']) do |node|
+      node.set['rundeck_test']['job_name'] = job_name
+    end.converge(described_recipe)
   end
 
   let(:response) do
@@ -34,7 +43,7 @@ describe 'rundeck-test::job' do
       job = { 'name' => 'test-job2', 'id' => 'abcde' }
       yaml = [job].to_yaml
       client = double('rundeck-client')
-      expect(Rundeck).to receive(:client) { client }
+      expect(Rundeck).to receive(:client) #{ client }
       expect(client).to receive(:export_jobs).with('project', 'yaml', kind_of(Hash)) { yaml }
       expect(client).to receive(:import_jobs) { response }
       chef_run # evaluate chef_run
@@ -66,6 +75,13 @@ describe 'rundeck-test::job' do
       expect(client).to receive(:export_jobs).with('project', 'yaml', kind_of(Hash)) { yaml }
       expect(client).not_to receive(:import_jobs)
       chef_run # evaluate chef_run
+    end
+  end
+
+  context 'job has malformed name' do
+    let(:job_name) { 'test*job' }
+    it 'raises an error' do
+      expect { chef_run }.to raise_error(RuntimeError)
     end
   end
 end
