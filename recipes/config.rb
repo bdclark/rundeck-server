@@ -40,12 +40,13 @@ node['rundeck_server']['aclpolicy'].each do |policy, configuration|
 end
 
 # Configure hostname
+config_state = node.run_state['rundeck-config.properties'] || {}
 template ::File.join(node['rundeck_server']['confdir'], 'rundeck-config.properties') do
   source   'properties.erb'
   mode     '0644'
   sensitive true
   notifies :restart, 'service[rundeckd]', :delayed
-  variables(properties: node['rundeck_server']['rundeck-config.properties'])
+  variables(properties: node['rundeck_server']['rundeck-config.properties'].merge(config_state))
 end
 
 # Configure thread pool
@@ -109,13 +110,14 @@ template 'rundeck-framework-properties' do
   notifies :restart, 'service[rundeckd]'
 end
 
+realm_state = node.run_state['rundeck-realm.properties'] || {}
 template 'realm.properties' do
   path     ::File.join(node['rundeck_server']['confdir'], 'realm.properties')
   source   'properties.erb'
   owner    'rundeck'
   group    'rundeck'
   mode     '0644'
-  variables(properties: node['rundeck_server']['realm.properties'])
+  variables(properties: node['rundeck_server']['realm.properties'].merge(realm_state))
   notifies :restart, 'service[rundeckd]'
 end
 
