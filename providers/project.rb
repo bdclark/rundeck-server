@@ -1,8 +1,15 @@
 use_inline_resources
 
+def load_current_resource
+  regex = '^[-_+.a-zA-Z0-9]+$'
+  unless new_resource.project_name =~ /#{regex}/
+    raise "Project name does not match regular expression: #{regex}"
+  end
+end
+
 action :create do
   %w(etc var).each do |d|
-    directory ::File.join(node['rundeck_server']['datadir'], 'projects', new_resource.name, d) do
+    directory ::File.join(node['rundeck_server']['datadir'], 'projects', new_resource.project_name, d) do
       user  'rundeck'
       group 'rundeck'
       mode '0770'
@@ -11,7 +18,7 @@ action :create do
   end
 
   properties = {
-    'project.name' => new_resource.name,
+    'project.name' => new_resource.project_name,
   }
 
   executor = new_resource.executor
@@ -45,7 +52,7 @@ action :create do
   end
   properties['service.FileCopier.default.provider'] = 'jsch-scp'
 
-  template ::File.join(node['rundeck_server']['datadir'], 'projects', new_resource.name, 'etc', 'project.properties') do
+  template ::File.join(node['rundeck_server']['datadir'], 'projects', new_resource.project_name, 'etc', 'project.properties') do
     source   'properties.erb'
     user     'rundeck'
     group    'rundeck'
@@ -56,7 +63,7 @@ action :create do
 end
 
 action :delete do
-  directory ::File.join(node['rundeck_server']['datadir'], 'projects', new_resource.name) do
+  directory ::File.join(node['rundeck_server']['datadir'], 'projects', new_resource.project_name) do
     recursive true
     action :delete
   end

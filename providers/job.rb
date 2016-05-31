@@ -5,7 +5,11 @@ def whyrun_supported?
 end
 
 def load_current_resource
-  @current_resource = Chef::Resource::RundeckServerJob.new(@new_resource.name)
+  regex = '^[-_+.a-zA-Z0-9() ]+$'
+  unless @new_resource.job_name =~ /#{regex}/
+    raise "Job name does not match regular expression: #{regex}"
+  end
+  @current_resource = Chef::Resource::RundeckServerJob.new(@new_resource.job_name)
   @current_resource.project(@new_resource.project)
 end
 
@@ -14,12 +18,12 @@ action :create do
   require 'yaml'
 
   client = Rundeck.client(endpoint: @new_resource.endpoint, api_token: @new_resource.api_token)
-  job = get_job(client, @current_resource.project, @current_resource.name)
+  job = get_job(client, @current_resource.project, @current_resource.job_name)
 
   updated_job = stringify(@new_resource.config.dup)
 
   # hydrate updated_job
-  updated_job['name']    ||= @current_resource.name
+  updated_job['name']    ||= @current_resource.job_name
   updated_job['project'] ||= @current_resource.project
   updated_job['uuid']    ||= job['uuid'] if job
 
@@ -41,7 +45,7 @@ action :create do
     # encode & in job config
     job_yaml = job_yaml.gsub(/&/, '%26')
 
-    converge_by "#{action_name} job #{@current_resource.project}/#{@current_resource.name}" do
+    converge_by "#{action_name} job #{@current_resource.project}/#{@current_resource.job_name}" do
       # dupeOption allow us to update jobs (default is create, which fails)
       response = client.import_jobs(job_yaml, 'yaml', opts.merge(query: { 'dupeOption' => 'update' }))
       Chef::Log.debug('Result: ' + response.inspect)
@@ -54,10 +58,10 @@ action :delete do
   require 'rundeck'
 
   client = Rundeck.client(endpoint: @new_resource.endpoint, api_token: @new_resource.api_token)
-  job = get_job(client, @current_resource.project, @current_resource.name)
+  job = get_job(client, @current_resource.project, @current_resource.job_name)
 
   if job
-    converge_by "delete job #{@current_resource.project}/#{@current_resource.name}" do
+    converge_by "delete job #{@current_resource.project}/#{@current_resource.job_name}" do
       client.delete_job(job['id'], opts)
     end
   else

@@ -1,6 +1,8 @@
 include_recipe 'rundeck-server'
 
-rundeck_server_project 'test-project-ssh' do
+node.default['rundeck_test']['project_name'] = 'test-project-ssh'
+
+rundeck_server_project node['rundeck_test']['project_name'] do
   executor :ssh
   sources [
     { 'type'           => 'url',
