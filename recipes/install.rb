@@ -23,6 +23,7 @@ when 'debian'
   apt_repository 'rundeck' do
     uri node['rundeck_server']['apt']['uri']
     components node['rundeck_server']['apt']['components']
+    distribution node['rundeck_server']['apt']['distribution']
     key node['rundeck_server']['apt']['key']
     action node['rundeck_server']['apt']['action']
   end
