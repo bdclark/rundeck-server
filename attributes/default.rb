@@ -36,7 +36,7 @@ default['rundeck_server']['plugins']['winrm']['url'] = 'https://github.com/runde
 #
 # System properties (D prefix)
 default['rundeck_server']['jvm']['Dloginmodule.name']                = 'RDpropertyfilelogin'
-default['rundeck_server']['jvm']['Dloginmodule.conf.name']           ::File.join(node['rundeck_server']['confdir'], 'jaas-loginmodule.conf')
+default['rundeck_server']['jvm']['Dloginmodule.conf.name']           = ::File.join(node['rundeck_server']['confdir'], 'jaas-loginmodule.conf')
 default['rundeck_server']['jvm']['Drdeck.config']                    = node['rundeck_server']['confdir']
 default['rundeck_server']['jvm']['Drundeck.server.configDir']        = node['rundeck_server']['confdir']
 default['rundeck_server']['jvm']['Drundeck.server.serverDir']        = node['rundeck_server']['basedir']
